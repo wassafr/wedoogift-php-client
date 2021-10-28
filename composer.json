@@ -1,0 +1,14 @@
+{
+  "name": "wassa/wedoogift-client",
+  "type": "library",
+  "license": "MIT",
+    "require": {
+      "guzzlehttp/guzzle": "^7.4",
+      "ext-json": "*"
+    },
+  "autoload": {
+    "psr-4": {
+      "Wassa\\WeDooGift\\": "src/"
+    }
+  }
+}
