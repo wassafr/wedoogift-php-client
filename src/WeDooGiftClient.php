@@ -3,7 +3,7 @@
 namespace Wassa\WeDooGift;
 
 use GuzzleHttp\Client;
-use GuzzleHttp\Exception\GuzzleException;
+use GuzzleHttp\Exception\TransferException;
 
 class WeDooGiftClient
 {
@@ -23,7 +23,7 @@ class WeDooGiftClient
 
   /**
    * Init the client. Must be called before anything else.
-   * @throws \GuzzleHttp\Exception\GuzzleException
+   * @throws \GuzzleHttp\Exception\TransferException
    */
   public function init() {
     $current = $this->sendRequest('GET', '/current');
@@ -37,7 +37,7 @@ class WeDooGiftClient
    * @param string $email
    * @param string $locale
    * @return int
-   * @throws \GuzzleHttp\Exception\GuzzleException
+   * @throws \GuzzleHttp\Exception\TransferException
    * @throws WeDooGiftException
    */
   public function addUser(string $firstName, string $lastName, string $email,  string $locale= 'fr_FR'): int {
@@ -54,7 +54,7 @@ class WeDooGiftClient
       $userId = $user->id;
 
       return $userId;
-    } catch (GuzzleException $e) {
+    } catch (TransferException $e) {
      throw new WeDooGiftException("Unable to add user: {$e->getMessage()}");
     }
   }
@@ -66,7 +66,7 @@ class WeDooGiftClient
    * @param int $userId
    * @param int $value
    * @param string $currency
-   * @throws \GuzzleHttp\Exception\GuzzleException
+   * @throws \GuzzleHttp\Exception\TransferException
    */
   public function distribute(int $reasonId, string $message, int $userId, int $value, string $currency = 'EUR') {
     // First list all deposits that have sufficient balance
@@ -94,7 +94,7 @@ class WeDooGiftClient
           ]
         ]
       ]);
-    } catch (GuzzleException $e) {
+    } catch (TransferException $e) {
       throw new WeDooGiftException("Unable to distribute: {$e->getMessage()}");
     }
 
@@ -113,7 +113,7 @@ class WeDooGiftClient
   {
     try {
       $res = $this->sendRequest('GET', "/company/$this->companyId/deposit?page=0&size=1000000000");
-    } catch (GuzzleException $e) {
+    } catch (TransferException $e) {
       throw new WeDooGiftException("Unable to list deposits: {$e->getMessage()}");
     }
 
@@ -140,7 +140,7 @@ class WeDooGiftClient
    * @param string $uri
    * @param array $options
    * @return mixed
-   * @throws \GuzzleHttp\Exception\GuzzleException
+   * @throws \GuzzleHttp\Exception\TransferException
    */
   private function sendRequest(string $method, string $uri = '', array $options = []) {
     $options = array_merge_recursive($options, [
@@ -149,7 +149,8 @@ class WeDooGiftClient
       ]
     ]);
 
-    $res = $this->client->request($method, self::BASE_URL . $uri, $options);
+    $req = $this->client->createRequest($method, self::BASE_URL . $uri, $options);
+    $res = $this->client->send($req);
 
     return json_decode($res->getBody()->getContents());
   }
