@@ -38,7 +38,7 @@ class WeDooGiftClient
    * @param string $locale
    * @return int
    * @throws \GuzzleHttp\Exception\TransferException
-   * @throws WeDooGiftException
+   * @throws \Exception
    */
   public function addUser(string $firstName, string $lastName, string $email,  string $locale= 'fr_FR'): int {
     try {
@@ -55,7 +55,7 @@ class WeDooGiftClient
 
       return $userId;
     } catch (TransferException $e) {
-     throw new WeDooGiftException("Unable to add user: {$e->getMessage()}");
+     throw new \Exception("Unable to add user: {$e->getMessage()}");
     }
   }
 
@@ -72,7 +72,7 @@ class WeDooGiftClient
     // First list all deposits that have sufficient balance
     $deposits = $this->listDeposits($value);
     if (count($deposits) == 0) {
-      throw new WeDooGiftException('Unable to distribute: no deposit with sufficient balance');
+      throw new \Exception('Unable to distribute: no deposit with sufficient balance');
     }
 
     // We use the first available deposit
@@ -95,11 +95,11 @@ class WeDooGiftClient
         ]
       ]);
     } catch (TransferException $e) {
-      throw new WeDooGiftException("Unable to distribute: {$e->getMessage()}");
+      throw new \Exception("Unable to distribute: {$e->getMessage()}");
     }
 
     if ($task->status != 'STARTING') {
-      throw new WeDooGiftException("Unable to distribute: task status is not STARTING");
+      throw new \Exception("Unable to distribute: task status is not STARTING");
     }
   }
 
@@ -107,19 +107,19 @@ class WeDooGiftClient
    * List all available deposits
    * @param int|null $value
    * @return array
-   * @throws WeDooGiftException
+   * @throws \Exception
    */
   public function listDeposits(int $value = null): array
   {
     try {
       $res = $this->sendRequest('GET', "/company/$this->companyId/deposit?page=0&size=1000000000");
     } catch (TransferException $e) {
-      throw new WeDooGiftException("Unable to list deposits: {$e->getMessage()}");
+      throw new \Exception("Unable to list deposits: {$e->getMessage()}");
     }
 
     $content = $res->content;
     if (!is_array($content)) {
-      throw new WeDooGiftException("Unable to list deposits: bad response from WeDooGift API");
+      throw new \Exception("Unable to list deposits: bad response from WeDooGift API");
     }
 
     $deposits = [];
